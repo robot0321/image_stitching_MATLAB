@@ -7,7 +7,7 @@ for i=1:6
     tmpimg = imread('data/'+string(i)+'.jpg');
     tmpimg = imresize(tmpimg(:,641:end-640,:), 0.2);
     tmpimg = imrotate(tmpimg, -90);
-    img{7-i} = single(rgb2gray(tmpimg));
+    img{i} = single(rgb2gray(tmpimg));
 end
 
 % getting SIFT features
