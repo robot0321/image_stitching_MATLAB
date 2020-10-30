@@ -1,4 +1,4 @@
-function [H, minh, value] = DLT(numDLT, numMatch, mp1, mp2)
+function H = DLT(numDLT, numMatch, mp1, mp2)
     DLTrandIdx = randsample(numMatch, numDLT);
     selpts1 = mp1(DLTrandIdx,:);
     selpts2 = mp2(DLTrandIdx,:);
@@ -16,10 +16,8 @@ function [H, minh, value] = DLT(numDLT, numMatch, mp1, mp2)
 
     % DLT2 ?
     [~,~,V] = svd(A);
-    opth = V(:,end);
+    opth = V(:,end)/norm(V(:,end));
     minh = vecnorm(A*opth, 2);
     
     H = reshape(opth,3,3)';
-    
-    value = diag(selpts2*H*selpts1');
 end

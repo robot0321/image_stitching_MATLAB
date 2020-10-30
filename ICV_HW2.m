@@ -32,22 +32,45 @@ figure(2); showMatchedFeatures(img{1}, img{2}, matchedPoint1(:,1:2), matchedPoin
 %% DLT, RANSAC
 
 numIter = 50000;
+IterHistory = [];
 count = 0;
-while(count<=numIter)
-    [candidH, minh, value] = DLT(4, size(matches,2), matchedPoint1, matchedPoint2);
-    diag(matchedPoint2*candidH*matchedPoint1')
-
+criterion = 1;
+maxInlierRatio = 0;
+maxH = zeros(3,3);
+maxMatchedIdx = [];
+while(count<=numIter)    
+    candidH = DLT(4, size(matches,2), matchedPoint1, matchedPoint2);
+    crsval = [];
+    for j=1:size(matchedPoint1, 1)
+        crsval = [crsval, norm(cross(matchedPoint2(j,:), candidH*matchedPoint1(j,:)'))];
+    end
+    [sortval, sortidx] = sort(crsval);
     
-    numIter = numIter/10;
+    numinlier = sum(sortval < criterion);
+    inlierRatio = numinlier/size(matches,2);
+
+    if(inlierRatio > maxInlierRatio)
+        maxInlierRatio = inlierRatio;
+        maxH = candidH;
+        maxMatchedIdx = sortidx(sortval < criterion);
+    end
+    
+    numIter = log(1-0.99)/log(1-(maxInlierRatio)^4);
     count = count + 1;
+    IterHistory = [IterHistory, numIter];
 end
 
-
+figure(3); showMatchedFeatures(img{1}, img{2}, matchedPoint1(maxMatchedIdx,1:2), matchedPoint2(maxMatchedIdx,1:2), 'montage')
+figure(4); plot(log(IterHistory)); ylabel('N (log-scale)'); xlabel('iteration');
 
 %%
-for i=1:6
-    figure(1);
-    imshow(img{i});
-    pause(0.5);
-end
 
+figure(5);
+tform = fitgeotrans(matchedPoint1(maxMatchedIdx,1:2),matchedPoint2(maxMatchedIdx,1:2),'projective');
+Jregistered1 = imwarp(img{1}/255,tform,'OutputView', imref2d([1024,1024],[-128,512+128],[-128,512+128]));
+Jregistered2 = imwarp(img{1}/255,'OutputView', imref2d([1024,1024],[-128,512+128],[-128,512+128]));
+figure
+imshowpair(Jregistered1,Jregistered2)
+
+
+f
