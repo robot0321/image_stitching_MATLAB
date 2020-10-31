@@ -66,11 +66,22 @@ figure(4); plot(log(IterHistory)); ylabel('N (log-scale)'); xlabel('iteration');
 %%
 
 figure(5);
-tform = fitgeotrans(matchedPoint1(maxMatchedIdx,1:2),matchedPoint2(maxMatchedIdx,1:2),'projective');
-Jregistered1 = imwarp(img{1}/255,tform,'OutputView', imref2d([1024,1024],[-128,512+128],[-128,512+128]));
-Jregistered2 = imwarp(img{1}/255,'OutputView', imref2d([1024,1024],[-128,512+128],[-128,512+128]));
+landsc = zeros(300, 1300);
+landsc(150-127:150+128, 650-127:650+128) = img{2}/255;
+imshow(landsc);
+
+J1 = imwarp(img{1}, projective2d(maxH'));
+landsc(150-127:150+128, 522-127:522+128) = J1/255;
+
+
+%%
+figure(5);
+tform = fitgeotrans(matchedPoint1(maxMatchedIdx,1:2), matchedPoint2(maxMatchedIdx,1:2), 'projective');
+Jregistered1 = imwarp(img{1}/255,tform,'OutputView', imref2d(size(img{2})));
+% Jregistered2 = imwarp(img{1}/255,'OutputView', imref2d(imsize(img{2})));
 figure
-imshowpair(Jregistered1,Jregistered2)
+imshowpair(img{2}, Jregistered1)
 
 
-f
+
+
